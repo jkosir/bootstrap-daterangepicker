@@ -196,9 +196,6 @@
             if (typeof options.minDate === 'object')
                 this.minDate = moment(options.minDate);
 
-            if (typeof options.disabledRanges === 'object')
-                this.disabledRanges = options.disabledRanges;
-
             if (typeof options.maxDate === 'object')
                 this.maxDate = moment(options.maxDate);
 
@@ -292,6 +289,17 @@
 
             if (typeof options.timePicker12Hour === 'boolean') {
                 this.timePicker12Hour = options.timePicker12Hour;
+            }
+
+            if (typeof options.disabledRanges === 'object'){
+                for (var i in options.disabledRanges){
+                    if (options.disabledRanges.hasOwnProperty(i)){
+                        this.disabledRanges.push({
+                            start: moment(options.disabledRanges[i].start),
+                            end: moment(options.disabledRanges[i].end)
+                        })
+                    }
+                }
             }
 
             // update day names order to firstDay
@@ -833,7 +841,6 @@
                     break;
                 }
             }
-            console.log(endDate);
 
             cal.find('td').removeClass('active');
 
