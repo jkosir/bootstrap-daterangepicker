@@ -133,6 +133,7 @@
             this.minDate = false;
             this.maxDate = false;
             this.dateLimit = false;
+            this.disabledRanges = [];
 
             this.showDropdowns = false;
             this.showWeekNumbers = false;
@@ -194,6 +195,9 @@
 
             if (typeof options.minDate === 'object')
                 this.minDate = moment(options.minDate);
+
+            if (typeof options.disabledRanges === 'object')
+                this.disabledRanges = options.disabledRanges;
 
             if (typeof options.maxDate === 'object')
                 this.maxDate = moment(options.maxDate);
@@ -528,6 +532,18 @@
             this.updateCalendars();
         },
 
+        inDisabledRange: function(date){
+            for (var i in this.disabledRanges){
+                if (this.disabledRanges.hasOwnProperty(i)){
+                    if ((date.isAfter(this.disabledRanges[i].start, 'day') && date.isBefore(this.disabledRanges[i].end, 'day'))
+                      || date.isSame(this.disabledRanges[i].start, 'day') || date.isSame(this.disabledRanges[i].end, 'day')){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
+
         notify: function () {
             this.updateView();
             this.cb(this.startDate, this.endDate, this.chosenLabel);
@@ -810,6 +826,15 @@
                 startDate = endDate.clone();
             }
 
+
+            for (var temp = startDate.clone(); temp.isBefore(endDate, 'days'); temp.add(1, 'days')){
+                if (this.inDisabledRange(temp)){
+                    endDate = temp.clone().subtract(1, 'days');
+                    break;
+                }
+            }
+            console.log(endDate);
+
             cal.find('td').removeClass('active');
 
             $(e.target).addClass('active');
@@ -1071,7 +1096,7 @@
                     var cname = 'available ';
                     cname += (calendar[row][col].month() == calendar[1][1].month()) ? '' : 'off';
 
-                    if ((minDate && calendar[row][col].isBefore(minDate, 'day')) || (maxDate && calendar[row][col].isAfter(maxDate, 'day'))) {
+                    if ((minDate && calendar[row][col].isBefore(minDate, 'day')) || (maxDate && calendar[row][col].isAfter(maxDate, 'day')) || this.inDisabledRange(calendar[row][col])) {
                         cname = ' off disabled ';
                     } else if (calendar[row][col].format('YYYY-MM-DD') == selected.format('YYYY-MM-DD')) {
                         cname += ' active ';
